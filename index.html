@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="SpeakText – Text to Speech. College Text and Speech Analysis Lab Experiment 07. Real-time speech synthesis converting written text into natural spoken audio using the browser's Web Speech API.">
+  <meta name="author" content="Text and Speech Analysis Lab">
+  <title>SpeakText – Text to Speech | Experiment 07</title>
+  
+  <!-- Google Fonts: Inter, Outfit, & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Browser Incompatibility Warning Banner -->
+  <div id="unsupportedBanner" class="unsupported-banner" style="display: none;" role="alert">
+    <div class="banner-content">
+      <div class="banner-icon">⚠️</div>
+      <div class="banner-text">
+        <strong>Browser Unsupported:</strong> The SpeechSynthesis API is not supported in this browser. Please use <strong>Google Chrome</strong>, <strong>Microsoft Edge</strong>, or <strong>Safari</strong> for full speech synthesis capabilities.
+      </div>
+      <button class="banner-close" id="closeBannerBtn" aria-label="Dismiss banner">&times;</button>
+    </div>
+  </div>
+
+  <!-- App Main Wrapper -->
+  <div class="app-layout">
+    
+    <!-- Academic Header -->
+    <header class="app-header">
+      <div class="header-container">
+        <div class="academic-badge-row">
+          <span class="badge academic-dept">TEXT &amp; SPEECH ANALYSIS</span>
+          <span class="badge-separator">•</span>
+          <span class="badge experiment-tag">Experiment 07 — Text-to-Speech</span>
+          <span class="badge-separator">•</span>
+          <span class="badge api-status-pill" id="apiStatusBadge">
+            <span class="status-indicator-dot online"></span> SpeechSynthesis API Ready
+          </span>
+        </div>
+        
+        <div class="header-main">
+          <div class="header-titles">
+            <div class="logo-group">
+              <div class="logo-icon-wrapper">
+                <svg class="logo-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                  <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                  <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+                </svg>
+                <div class="logo-pulse-ring"></div>
+              </div>
+              <div class="title-wrap">
+                <h1 class="app-title">SpeakText <span class="title-sub">– Text to Speech</span></h1>
+                <p class="app-subtitle">Client-Side Acoustic Speech Synthesis &amp; Prosodic Voice Modeling Engine</p>
+              </div>
+            </div>
+          </div>
+          
+          <div class="header-actions">
+            <button id="themeToggleBtn" class="btn-icon" title="Toggle Visual Accent" aria-label="Toggle visual theme accent">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="5"></circle>
+                <line x1="12" y1="1" x2="12" y2="3"></line>
+                <line x1="12" y1="21" x2="12" y2="23"></line>
+                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                <line x1="1" y1="12" x2="3" y2="12"></line>
+                <line x1="21" y1="12" x2="23" y2="12"></line>
+                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+              </svg>
+            </button>
+            <a href="#explanationSection" class="btn-secondary header-doc-btn">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+              </svg>
+              <span>TTS Theory</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Workspace Section -->
+    <main class="main-content">
+      <div class="workspace-grid">
+        
+        <!-- Left Column: Input & Speech Workspace -->
+        <section class="workspace-left">
+          
+          <!-- Text Input Card -->
+          <div class="glass-card text-input-card">
+            <div class="card-header">
+              <div class="card-header-left">
+                <div class="card-icon-badge">
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
+                  </svg>
+                </div>
+                <div>
+                  <h2 class="card-title">Speech Input Buffer</h2>
+                  <p class="card-desc">Type, paste, or select sample text to synthesize into spoken audio</p>
+                </div>
+              </div>
+              
+              <div class="card-header-actions">
+                <button id="copyTextBtn" class="btn-chip" title="Copy text to clipboard">
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                  </svg>
+                  <span>Copy</span>
+                </button>
+                <button id="clearTextBtn" class="btn-chip btn-chip-danger" title="Clear text (🗑 Clear)">
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                  </svg>
+                  <span>Clear</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Large Textarea -->
+            <div class="textarea-container">
+              <label for="textInput" class="visually-hidden">Text to be synthesized into speech</label>
+              <textarea 
+                id="textInput" 
+                class="tts-textarea" 
+                rows="7" 
+                placeholder="Type something you want the computer to speak..." 
+                spellcheck="true"
+                autocomplete="off"
+              >Welcome to our Text and Speech Analysis project.</textarea>
+              
+              <!-- Floating Active Word Highlight Container (Teleprompter display while speaking) -->
+              <div id="teleprompterContainer" class="teleprompter-overlay" style="display: none;" aria-live="polite">
+                <div class="teleprompter-header">
+                  <span class="teleprompter-tag">LIVE WORD TRACKER</span>
+                  <button id="closeTeleprompterBtn" class="teleprompter-toggle" title="Switch back to raw editor">Show Raw Editor</button>
+                </div>
+                <div id="teleprompterText" class="teleprompter-body"></div>
+              </div>
+            </div>
+
+            <!-- Buffer Footer / Stats -->
+            <div class="textarea-footer">
+              <div class="text-metrics">
+                <span class="metric-item">
+                  <strong id="charCount">50</strong> <span class="metric-label">characters</span>
+                </span>
+                <span class="metric-divider">•</span>
+                <span class="metric-item">
+                  <strong id="wordCount">8</strong> <span class="metric-label">words</span>
+                </span>
+                <span class="metric-divider">•</span>
+                <span class="metric-item">
+                  <strong id="estDuration">~3.2s</strong> <span class="metric-label">est. duration</span>
+                </span>
+              </div>
+              <div class="input-actions-hint">
+                <kbd>Ctrl</kbd> + <kbd>Enter</kbd> to Speak
+              </div>
+            </div>
+
+            <!-- Quick Presets Carousel -->
+            <div class="preset-section">
+              <div class="preset-header">
+                <span class="preset-label">
+                  <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2">
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                  </svg>
+                  Quick Presets &amp; Lab Samples:
+                </span>
+              </div>
+              <div class="preset-chips">
+                <button class="preset-chip active" data-text="Welcome to our Text and Speech Analysis project.">
+                  <span class="preset-badge">Experiment Target</span>
+                  <span>"Welcome to our Text and Speech Analysis project."</span>
+                </button>
+                <button class="preset-chip" data-text="Text-to-speech is a technology that converts written text into synthesized human speech.">
+                  <span class="preset-badge">Definition</span>
+                  <span>"Text-to-speech is a technology..."</span>
+                </button>
+                <button class="preset-chip" data-text="Neural acoustic models and vocoders synthesize natural human intonation through deep learning representations.">
+                  <span class="preset-badge">Technical</span>
+                  <span>"Neural acoustic models and vocoders..."</span>
+                </button>
+                <button class="preset-chip" data-text="Peter Piper picked a peck of pickled peppers. How much wood would a woodchuck chuck if a woodchuck could chuck wood?">
+                  <span class="preset-badge">Phonetics</span>
+                  <span>"Peter Piper picked a peck..."</span>
+                </button>
+                <button class="preset-chip" data-text="Hello, Bonjour, Hola, Guten Tag, Namaste, Konnichiwa! Speech synthesis brings global voices together.">
+                  <span class="preset-badge">Multilingual</span>
+                  <span>"Global greetings and multilingual..."</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Primary Control Buttons Bar -->
+            <div class="playback-controls-bar">
+              <div class="playback-buttons">
+                <!-- Speak Button -->
+                <button id="speakBtn" class="btn-playback btn-speak" title="Speak text aloud">
+                  <span class="btn-icon-symbol">🔊</span>
+                  <span class="btn-label">Speak</span>
+                </button>
+
+                <!-- Pause Button -->
+                <button id="pauseBtn" class="btn-playback btn-pause" disabled title="Pause current speech">
+                  <span class="btn-icon-symbol">⏸</span>
+                  <span class="btn-label">Pause</span>
+                </button>
+
+                <!-- Resume Button -->
+                <button id="resumeBtn" class="btn-playback btn-resume" disabled title="Resume paused speech">
+                  <span class="btn-icon-symbol">▶</span>
+                  <span class="btn-label">Resume</span>
+                </button>
+
+                <!-- Stop Button -->
+                <button id="stopBtn" class="btn-playback btn-stop" disabled title="Stop and reset speech">
+                  <span class="btn-icon-symbol">⏹</span>
+                  <span class="btn-label">Stop</span>
+                </button>
+
+                <!-- Clear Button -->
+                <button id="clearBtn" class="btn-playback btn-clear" title="Clear text and reset">
+                  <span class="btn-icon-symbol">🗑</span>
+                  <span class="btn-label">Clear</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Real-Time Acoustic Visualizer & Teleprompter Card -->
+          <div class="glass-card visualizer-card">
+            <div class="card-header">
+              <div class="card-header-left">
+                <div class="card-icon-badge accent-cyan">
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="20" x2="18" y2="10"></line>
+                    <line x1="12" y1="20" x2="12" y2="4"></line>
+                    <line x1="6" y1="20" x2="6" y2="14"></line>
+                  </svg>
+                </div>
+                <div>
+                  <h3 class="card-title">Acoustic Synthesizer Frequency Monitor</h3>
+                  <p class="card-desc">Simulated waveform modulation representing formant resonance during utterance</p>
+                </div>
+              </div>
+              <div class="visualizer-status-indicator">
+                <span id="visualizerDot" class="status-indicator-dot idle"></span>
+                <span id="visualizerText" class="visualizer-status-label">Engine Idle</span>
+              </div>
+            </div>
+
+            <!-- Dynamic Equalizer Bars -->
+            <div class="equalizer-container" id="equalizerContainer" aria-hidden="true">
+              <div class="eq-bar eq-bar-1"></div>
+              <div class="eq-bar eq-bar-2"></div>
+              <div class="eq-bar eq-bar-3"></div>
+              <div class="eq-bar eq-bar-4"></div>
+              <div class="eq-bar eq-bar-5"></div>
+              <div class="eq-bar eq-bar-6"></div>
+              <div class="eq-bar eq-bar-7"></div>
+              <div class="eq-bar eq-bar-8"></div>
+              <div class="eq-bar eq-bar-9"></div>
+              <div class="eq-bar eq-bar-10"></div>
+              <div class="eq-bar eq-bar-11"></div>
+              <div class="eq-bar eq-bar-12"></div>
+              <div class="eq-bar eq-bar-13"></div>
+              <div class="eq-bar eq-bar-14"></div>
+              <div class="eq-bar eq-bar-15"></div>
+              <div class="eq-bar eq-bar-16"></div>
+              <div class="eq-bar eq-bar-17"></div>
+              <div class="eq-bar eq-bar-18"></div>
+              <div class="eq-bar eq-bar-19"></div>
+              <div class="eq-bar eq-bar-20"></div>
+              <div class="eq-bar eq-bar-21"></div>
+              <div class="eq-bar eq-bar-22"></div>
+              <div class="eq-bar eq-bar-23"></div>
+              <div class="eq-bar eq-bar-24"></div>
+            </div>
+
+            <!-- Current Word Tracker Ribbon -->
+            <div class="current-word-ribbon">
+              <span class="ribbon-label">Current Spoken Word:</span>
+              <span id="activeWordDisplay" class="active-word-tag">— None (Awaiting Speech) —</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Right Column: Controls & Status Panel -->
+        <aside class="workspace-right">
+          
+          <!-- Speech Status Card -->
+          <div class="glass-card status-card">
+            <div class="card-header">
+              <div class="card-header-left">
+                <div class="card-icon-badge accent-emerald">
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                  </svg>
+                </div>
+                <div>
+                  <h2 class="card-title">Speech Status</h2>
+                  <p class="card-desc">Real-time synthesizer state machine</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Status Pill Badge -->
+            <div class="status-display-box">
+              <div class="status-badge-wrapper">
+                <div id="statusBadge" class="status-badge status-ready">
+                  <span class="status-pulse-ring"></span>
+                  <span class="status-icon" id="statusIcon">🟢</span>
+                  <span class="status-text" id="statusText">Ready</span>
+                </div>
+              </div>
+              <p id="statusDescription" class="status-description">The speech engine is initialized and ready to synthesize input text.</p>
+            </div>
+
+            <!-- Selected Voice Info Banner -->
+            <div class="voice-details-inspector">
+              <div class="inspector-header">
+                <span class="inspector-title">Active Voice Details</span>
+                <span class="inspector-tag" id="voiceTypeBadge">System Voice</span>
+              </div>
+              <div class="inspector-body">
+                <div class="inspector-item">
+                  <span class="inspector-key">Selected Voice:</span>
+                  <span class="inspector-val voice-name-highlight" id="inspectorVoiceName">Loading system voices...</span>
+                </div>
+                <div class="inspector-item">
+                  <span class="inspector-key">Language / Locale:</span>
+                  <span class="inspector-val" id="inspectorVoiceLang">Detecting...</span>
+                </div>
+                <div class="inspector-item">
+                  <span class="inspector-key">Synthesis Service:</span>
+                  <span class="inspector-val" id="inspectorVoiceService">Client-side Native</span>
+                </div>
+                <div class="inspector-item">
+                  <span class="inspector-key">Active Parameters:</span>
+                  <span class="inspector-val monospace-tag" id="inspectorParams">Speed: 1.0x | Pitch: 1.0 | Vol: 100%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Synthesis Acoustic Controls Card -->
+          <div class="glass-card controls-card">
+            <div class="card-header">
+              <div class="card-header-left">
+                <div class="card-icon-badge accent-purple">
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="4" y1="21" x2="4" y2="14"></line>
+                    <line x1="4" y1="10" x2="4" y2="3"></line>
+                    <line x1="12" y1="21" x2="12" y2="12"></line>
+                    <line x1="12" y1="8" x2="12" y2="3"></line>
+                    <line x1="20" y1="21" x2="20" y2="16"></line>
+                    <line x1="20" y1="12" x2="20" y2="3"></line>
+                    <line x1="1" y1="14" x2="7" y2="14"></line>
+                    <line x1="9" y1="8" x2="15" y2="8"></line>
+                    <line x1="17" y1="16" x2="23" y2="16"></line>
+                  </svg>
+                </div>
+                <div>
+                  <h2 class="card-title">Acoustic Controls</h2>
+                  <p class="card-desc">Configure voice, dialect, speed, pitch &amp; amplitude</p>
+                </div>
+              </div>
+              <button id="resetControlsBtn" class="btn-reset-controls" title="Reset all sliders to default values">
+                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="1 4 1 10 7 10"></polyline>
+                  <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+                </svg>
+                <span>Reset</span>
+              </button>
+            </div>
+
+            <div class="controls-form">
+              
+              <!-- 1. Language Filter -->
+              <div class="control-group">
+                <div class="control-header">
+                  <label for="languageSelect" class="control-label">
+                    <span>🌐 Language Filter</span>
+                  </label>
+                  <span class="control-subinfo" id="langCountBadge">All Languages</span>
+                </div>
+                <div class="select-wrapper">
+                  <select id="languageSelect" class="custom-select">
+                    <option value="ALL">All Available Languages</option>
+                  </select>
+                  <div class="select-arrow">▼</div>
+                </div>
+              </div>
+
+              <!-- 2. Voice Selection -->
+              <div class="control-group">
+                <div class="control-header">
+                  <label for="voiceSelect" class="control-label">
+                    <span>🎙️ Voice Selection</span>
+                  </label>
+                  <span class="control-subinfo" id="voiceCountBadge">0 Voices Available</span>
+                </div>
+                <div class="select-wrapper">
+                  <select id="voiceSelect" class="custom-select">
+                    <option value="" disabled selected>Loading available system voices...</option>
+                  </select>
+                  <div class="select-arrow">▼</div>
+                </div>
+                <div class="voice-search-helper">
+                  <input type="text" id="voiceSearchInput" class="voice-search-box" placeholder="Filter voices by name (e.g. David, Google, Jenny, Natural)...">
+                </div>
+              </div>
+
+              <!-- 3. Speech Speed (Rate) Slider -->
+              <div class="control-group">
+                <div class="control-header">
+                  <label for="rateSlider" class="control-label">
+                    <span>⚡ Speech Speed (Rate)</span>
+                  </label>
+                  <span class="slider-badge" id="rateValueBadge">1.0x</span>
+                </div>
+                <div class="slider-container">
+                  <input 
+                    type="range" 
+                    id="rateSlider" 
+                    class="custom-slider" 
+                    min="0.5" 
+                    max="2.0" 
+                    step="0.1" 
+                    value="1.0"
+                    aria-valuemin="0.5"
+                    aria-valuemax="2.0"
+                    aria-valuenow="1.0"
+                  >
+                  <div class="slider-ticks">
+                    <span class="tick-label" data-val="0.5">0.5x (Slow)</span>
+                    <span class="tick-label tick-default" data-val="1.0">1.0x (Normal)</span>
+                    <span class="tick-label" data-val="2.0">2.0x (Fast)</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 4. Pitch Slider -->
+              <div class="control-group">
+                <div class="control-header">
+                  <label for="pitchSlider" class="control-label">
+                    <span>🎼 Pitch (Fundamental F0)</span>
+                  </label>
+                  <span class="slider-badge" id="pitchValueBadge">1.0</span>
+                </div>
+                <div class="slider-container">
+                  <input 
+                    type="range" 
+                    id="pitchSlider" 
+                    class="custom-slider" 
+                    min="0.5" 
+                    max="2.0" 
+                    step="0.1" 
+                    value="1.0"
+                    aria-valuemin="0.5"
+                    aria-valuemax="2.0"
+                    aria-valuenow="1.0"
+                  >
+                  <div class="slider-ticks">
+                    <span class="tick-label" data-val="0.5">0.5 (Deep)</span>
+                    <span class="tick-label tick-default" data-val="1.0">1.0 (Natural)</span>
+                    <span class="tick-label" data-val="2.0">2.0 (High)</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 5. Volume Slider -->
+              <div class="control-group">
+                <div class="control-header">
+                  <label for="volumeSlider" class="control-label">
+                    <span>🔊 Volume (Amplitude)</span>
+                  </label>
+                  <span class="slider-badge" id="volumeValueBadge">100%</span>
+                </div>
+                <div class="slider-container">
+                  <input 
+                    type="range" 
+                    id="volumeSlider" 
+                    class="custom-slider" 
+                    min="0.0" 
+                    max="1.0" 
+                    step="0.05" 
+                    value="1.0"
+                    aria-valuemin="0.0"
+                    aria-valuemax="1.0"
+                    aria-valuenow="1.0"
+                  >
+                  <div class="slider-ticks">
+                    <span class="tick-label" data-val="0.0">0% (Mute)</span>
+                    <span class="tick-label" data-val="0.5">50%</span>
+                    <span class="tick-label tick-default" data-val="1.0">100% (Full)</span>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </aside>
+
+      </div>
+
+      <!-- Quick Interactive Example Section -->
+      <section class="example-showcase-section">
+        <div class="glass-card example-card">
+          <div class="example-card-grid">
+            <div class="example-text-col">
+              <span class="example-badge">REQUIRED LAB EXAMPLE</span>
+              <h3 class="example-title">Demonstration Utterance</h3>
+              <p class="example-quote">“Welcome to our Text and Speech Analysis project.”</p>
+              <p class="example-instructions">
+                Click <strong>“Load &amp; Speak Example”</strong> to instantly load this benchmark phrase into the synthesis buffer and hear the browser read it aloud using your selected voice configuration.
+              </p>
+            </div>
+            <div class="example-action-col">
+              <button id="runExampleBtn" class="btn-primary btn-example-trigger">
+                <span class="btn-icon-symbol">🔊</span>
+                <span>Load &amp; Speak Example</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Academic Theory & Explanation Section -->
+      <section id="explanationSection" class="explanation-section">
+        <div class="section-title-wrap">
+          <span class="section-pre-title">LABORATORY COURSEWORK</span>
+          <h2 class="section-heading">Theory, Architecture &amp; Methodology</h2>
+          <div class="heading-line"></div>
+        </div>
+
+        <!-- Core Highlight Banner (User Requirement) -->
+        <div class="core-definition-banner">
+          <div class="definition-icon-col">
+            <div class="glow-orb">
+              <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+                <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+              </svg>
+            </div>
+          </div>
+          <div class="definition-text-col">
+            <span class="definition-tag">FUNDAMENTAL PRINCIPLE</span>
+            <blockquote class="definition-statement">
+              “Text-to-speech is a technology that converts written text into synthesized human speech.”
+            </blockquote>
+            <p class="definition-caption">
+              Speech synthesis bridges the gap between discrete linguistic symbols (letters, numbers, tokens) and continuous acoustic pressure waves that emulate the physiological human vocal tract.
+            </p>
+          </div>
+        </div>
+
+        <!-- 4-Stage Architectural Pipeline Cards -->
+        <div class="theory-grid">
+          
+          <!-- Stage 1 -->
+          <div class="glass-card theory-card">
+            <div class="stage-number">01</div>
+            <div class="theory-card-header">
+              <div class="card-icon-badge accent-purple">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                  <line x1="16" y1="13" x2="8" y2="13"></line>
+                  <line x1="16" y1="17" x2="8" y2="17"></line>
+                </svg>
+              </div>
+              <h3 class="theory-title">Text Normalization (NLP Frontend)</h3>
+            </div>
+            <p class="theory-desc">
+              Raw text contains non-standard words (NSWs), punctuation, abbreviations, numbers, dates, and symbols. The NLP frontend normalizes:
+            </p>
+            <ul class="theory-list">
+              <li><strong>Number Expansion:</strong> Translates <code>"2026"</code> into <em>"twenty twenty-six"</em> or <em>"two thousand twenty-six"</em> based on context.</li>
+              <li><strong>Acronym Expansion:</strong> Differentiates <code>"Dr."</code> (Doctor/Drive) and <code>"St."</code> (Street/Saint).</li>
+              <li><strong>Punctuation Tokenization:</strong> Maps commas and periods to physiological pause intervals.</li>
+            </ul>
+          </div>
+
+          <!-- Stage 2 -->
+          <div class="glass-card theory-card">
+            <div class="stage-number">02</div>
+            <div class="theory-card-header">
+              <div class="card-icon-badge accent-cyan">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect>
+                  <rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect>
+                  <line x1="6" y1="6" x2="6.01" y2="6"></line>
+                  <line x1="6" y1="18" x2="6.01" y2="18"></line>
+                </svg>
+              </div>
+              <h3 class="theory-title">Grapheme-to-Phoneme (G2P)</h3>
+            </div>
+            <p class="theory-desc">
+              Converts written alphabet sequences (graphemes) into phonetic sound representations (phonemes):
+            </p>
+            <ul class="theory-list">
+              <li><strong>Phonetic Transcriptions:</strong> Maps words to the International Phonetic Alphabet (IPA) or Arpabet symbols.</li>
+              <li><strong>Homograph Disambiguation:</strong> Accurately chooses pronunciations for words like <em>"wind"</em> (breeze vs. coil) or <em>"read"</em> (present vs. past).</li>
+              <li><strong>Pronunciation Lexicons &amp; ML:</strong> Combines dictionary lookups with neural sequence models for out-of-vocabulary terms.</li>
+            </ul>
+          </div>
+
+          <!-- Stage 3 -->
+          <div class="glass-card theory-card">
+            <div class="stage-number">03</div>
+            <div class="theory-card-header">
+              <div class="card-icon-badge accent-amber">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                </svg>
+              </div>
+              <h3 class="theory-title">Prosody &amp; Acoustic Modeling</h3>
+            </div>
+            <p class="theory-desc">
+              Natural speech requires rhythm, emphasis, melody, and emotional pitch variation:
+            </p>
+            <ul class="theory-list">
+              <li><strong>Pitch Contour (F0):</strong> Predicts fundamental vocal cord vibration frequency throughout the sentence.</li>
+              <li><strong>Phone Duration:</strong> Calculates millisecond timing for vowels and consonants.</li>
+              <li><strong>Stress &amp; Intonation:</strong> Raises pitch and volume on interrogative inflection (questions vs. declarative assertions).</li>
+            </ul>
+          </div>
+
+          <!-- Stage 4 -->
+          <div class="glass-card theory-card">
+            <div class="stage-number">04</div>
+            <div class="theory-card-header">
+              <div class="card-icon-badge accent-emerald">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path>
+                  <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                  <line x1="12" y1="19" x2="12" y2="22"></line>
+                </svg>
+              </div>
+              <h3 class="theory-title">Acoustic Synthesis &amp; Vocoders</h3>
+            </div>
+            <p class="theory-desc">
+              The final stage converts phonetic and prosodic features into physical pressure waveforms:
+            </p>
+            <ul class="theory-list">
+              <li><strong>Concatenative Synthesis:</strong> Slices and concatenates pre-recorded human speech diphones.</li>
+              <li><strong>Formant Synthesis:</strong> Synthesizes speech mathematically by modeling vocal tract acoustic resonances.</li>
+              <li><strong>Neural Vocoders (Modern):</strong> Models like WaveNet, Tacotron 2, and HiFi-GAN generate high-fidelity 24kHz/48kHz raw audio.</li>
+            </ul>
+          </div>
+
+        </div>
+
+        <!-- Technical Specification of Web Speech API -->
+        <div class="glass-card api-deep-dive-card">
+          <div class="deep-dive-header">
+            <h3 class="deep-dive-title">Browser Web Speech API Architecture (`SpeechSynthesis`)</h3>
+            <span class="badge api-spec-badge">W3C Community Group Spec</span>
+          </div>
+          <div class="deep-dive-grid">
+            <div class="deep-dive-col">
+              <h4>1. SpeechSynthesis Singleton (`window.speechSynthesis`)</h4>
+              <p>The controller interface for the synthesis service in the browser. It manages the utterance speech queue, hardware audio channel access, and exposes global methods:</p>
+              <div class="code-block">
+                <code>// Global controller methods
+speechSynthesis.speak(utterance); // Queues utterance for speech
+speechSynthesis.pause();          // Pauses ongoing playback
+speechSynthesis.resume();         // Resumes paused playback
+speechSynthesis.cancel();         // Stops and clears queue
+speechSynthesis.getVoices();      // Retrieves list of system voices</code>
+              </div>
+            </div>
+            <div class="deep-dive-col">
+              <h4>2. SpeechSynthesisUtterance Object</h4>
+              <p>Encapsulates the text content, linguistic configuration, and event listeners for each individual spoken phrase:</p>
+              <div class="code-block">
+                <code>const utterance = new SpeechSynthesisUtterance(text);
+utterance.voice = selectedVoice;  // SpeechSynthesisVoice object
+utterance.rate = 1.0;            // 0.1 to 10 (normal is 1.0)
+utterance.pitch = 1.0;           // 0 to 2 (normal is 1.0)
+utterance.volume = 1.0;          // 0.0 to 1.0
+utterance.onstart = () => updateStatus('Speaking');
+utterance.onboundary = (e) => highlightWord(e.charIndex);
+utterance.onend = () => updateStatus('Finished');</code>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </section>
+    </main>
+
+    <!-- Academic Laboratory Footer -->
+    <footer class="app-footer">
+      <div class="footer-container">
+        <div class="footer-left">
+          <div class="footer-brand">
+            <strong>SpeakText – Text to Speech</strong>
+            <span class="footer-dot">•</span>
+            <span>Experiment 07</span>
+          </div>
+          <p class="footer-subtext">Department of Computer Science &amp; Engineering | Text and Speech Analysis Laboratory</p>
+        </div>
+        <div class="footer-right">
+          <div class="footer-chips">
+            <span class="chip-item">W3C Web Speech API</span>
+            <span class="chip-item">SpeechSynthesisUtterance</span>
+            <span class="chip-item">Zero Backend</span>
+            <span class="chip-item">100% Client-Side</span>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toastContainer" class="toast-container" aria-live="assertive"></div>
+
+  <!-- Application Logic -->
+  <script src="app.js"></script>
+</body>
+</html>
